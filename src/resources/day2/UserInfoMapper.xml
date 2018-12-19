@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lq.day2.UserInfoMapper">
+
+    <!-- parameterType：参数类型，可以省略，
+	获取自增主键的值：
+		mysql支持自增主键，自增主键值的获取，mybatis也是利用statement.getGenreatedKeys()；
+		useGeneratedKeys="true"：使用自增主键获取主键值策略
+		keyProperty：指定对应的主键属性，也就是mybatis获取到主键值以后，将这个值封装给javaBean的哪个属性
+	-->
+    <!--添加一个用户 parameterType是可以直接省略不写的，也可以写
+
+    -->
+    <insert id="addUserInfo">
+        insert into ${tableName}(username,password,id,info) values (#{userInfo.userName},#{userInfo.password},#{userInfo.id},#{userInfo.info})
+    </insert>
+
+    <!--根据id修改一个用户-->
+    <update id="updateUserInfo">
+        update user_info set username=#{userName},password=#{password},info=#{info} where id=#{id}
+    </update>
+
+    <!--根据id删除一个用户-->
+    <delete id="deleteUserInfo" >
+        delete from user_info where id=#{id}
+    </delete>
+
+    <!--
+                     数据库查询的不同方式
+    -->
+
+    <!--根据id查询一个用户  （parameterType可以不写）-->
+    <select id="getUserInfoById" resultType="com.lq.day2.UserInfo">
+		select username userName,password,id,info from user_info where id = #{id}
+	</select>
+
+    <!--通过id与username查询一个用户(也就是多参数执行：myBatis会进行特殊的处理，导致不能与传一个参数一样去写数据库语句操作的写法)-->
+    <!--select * from user_info where id=#{param1} and username=#{param2}-->
+    <!--使用@Prama注解在接口方法中指定 则可以如下这么写-->
+    <select id="getUserInfoByIdAndUsername" resultType="com.lq.day2.UserInfo">
+      select * from user_info where id=#{id} and username=#{userName}
+    </select>
+
+    <!--使用map集合查询-->
+    <select id="getUserInfoByMap" resultType="com.lq.day2.UserInfo">
+         select * from ${tableName} where id=#{id} and username=#{userName}
+    </select>
+
+    <!--模糊查询：返回List<UserInfo>  resultType还是指定原先的UserInfo而不是list-->
+    <select id="getUserInfos" resultType="com.lq.day2.UserInfo">
+        select * from user_info where username like #{userName}
+    </select>
+
+    <!--根据id查询数据库中的一条记录，返回的是Map集合类型-->
+    <select id="getUserInfoMap" resultType="map">
+        select * from user_info where id=#{id}
+    </select>
+
+    <!--
+     根据username模糊查询 返回数据库中的多条记录 返回的是Map集合类型
+    -->
+    <select id="getEmpByUsernameLikeReturnMap" resultType="com.lq.day2.UserInfo">
+        select * from user_info where username like #{userName}
+    </select>
+
+</mapper>

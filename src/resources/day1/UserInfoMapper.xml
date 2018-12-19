@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.day1.UserInfoMapper">
+    <!--
+    namespace:名称空间;指定为接口的全类名。也就是将UserInfoMapper接口与UserInfoMapper.xml绑定
+    id：唯一标识
+    resultType：返回值类型
+    #{id}：从传递过来的参数中取出id值
+
+    将接口中的方法名称与id绑定
+    UserInfo getUserInfoById(Integer id);
+     -->
+    <!--<select id="getUserInfoById" resultType="com.lq.day1.UserInfo">-->
+		<!--select * from user_info where id = #{id}-->
+	<!--</select>-->
+
+    <!--因为在mybatis-config.xml中配置了typeAliases标签，指定了com.lq.day1.UserInfo的别名，所以可以这样写-->
+    <select id="getUserInfoById" resultType="userInfo">
+		select * from user_info where id = #{id}
+	</select>
+</mapper>

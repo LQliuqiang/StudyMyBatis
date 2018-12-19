@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lq.day3.UserInfoMapper">
+
+    <!--
+     1. （resultMap）表与表之间的联合查询封装结果集的两种方式
+     (resultMap的另一个功能就是数据库中的表名不用赋值别名，也可以绑定数据到JavaBean上)
+    -->
+
+    <!--
+     表与表之间的联合查询封装结果集的第一种方式
+    -->
+    <resultMap id="userInfoMap" type="com.lq.day3.UserInfo">
+        <!--因为在下面查询数据库的语句中，已经为每个表的属性赋值了别名-->
+        <id column="uId" property="id"/> <!--主键-->
+        <result column="uName" property="userName"/>
+        <result column="uPwd" property="password"/>
+        <result column="uInfo" property="info"/>
+
+        <result column="cId" property="car.id"/>
+        <result column="cType" property="car.type"/>
+        <result column="cPrice" property="car.price"/>
+
+    </resultMap>
+
+
+    <!--
+    表与表之间的联合查询封装结果集的第二种方式
+   -->
+    <resultMap id="userInfoMap2" type="com.lq.day3.UserInfo">
+        <!--因为在下面查询数据库的语句中，已经为每个表的属性赋值了别名-->
+        <id column="uId" property="id"/> <!--主键-->
+        <result column="uName" property="userName"/>
+        <result column="uPwd" property="password"/>
+        <result column="uInfo" property="info"/>
+        <!--  association可以指定联合的javaBean对象
+          property="car"：指定哪个属性是联合的对象
+          javaType:指定这个属性对象的类型[不能省略]-->
+        <association property="car" javaType="com.lq.day3.Car">
+            <id column="cId" property="id"/>
+            <result column="cType" property="type"/>
+            <result column="cPrice" property="price"/>
+        </association>
+
+    </resultMap>
+
+    <!--查询语句 为每一个表以及表中的字段 重新赋予别名-->
+    <select id="getUserInfoAndCar" resultMap="userInfoMap2">
+        select ui.id uId,ui.username uName,ui.password uPwd,ui.info uInfo ,ui.carId uiCarId,
+                car.id cId,car.type cType,car.price cPrice
+        from user_info ui,car where ui.carId = car.id and ui.id = #{id}
+
+    </select>
+
+    <!--==================================================================================-->
+
+    <!--2.分步骤查询-->
+    <resultMap id="stepMap" type="com.lq.day3.UserInfo">
+        <id column="id" property="id"/>
+        <result column="username" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="info" property="info"/>
+        <!-- association定义关联对象的封装规则
+	 		select:表明当前属性是调用select指定的方法查出的结果
+	 		column:指定将哪一列的值传给这个方法
+	 		流程：使用select指定的方法（传入column指定的这列参数的值）查出对象，并封装给property指定的属性
+	 	 -->
+        <association property="car" select="com.lq.day3.CarMapper.getCar" column="carId"/>
+    </resultMap>
+
+    <select id="getUserInfo" resultMap="stepMap">
+        select * from user_info where id=#{id}
+    </select>
+
+    <!--
+    分步骤查询真正的作用：可以使用延迟加载（懒加载）；(按需加载)
+	 	UserInfo==>Car：
+	 		我们每次查询UserInfo对象的时候，都将一起查询出来。
+	 		Car信息在我们使用的时候再去查询；
+	 		分段查询的基础之上加上两个配置：在mybatis-config.xml中setting属性中配置
+	 	这样可以在我们真正去使用内部关联的Car这个属性表的时候，再去数据库加载，减少了多余的消耗
+    -->
+
+
+    <!--==================================================================================-->
+
+    <!--
+     每种车可能对应着多个用户： user1,user3,user4都有宝马车 user2,user5都有奔驰车：实例在CarMapper.xml中(多表联查)
+    -->
+
+    <!-- 根据carId查询出对应所有的UserInfo-->
+    <select id="getUserInfosByCarId" resultType="com.lq.day3.UserInfo">
+        select * from user_info where carId=#{carId}
+    </select>
+
+
+    <!-- =======================鉴别器============================ -->
+    <!-- <discriminator javaType=""></discriminator>
+        鉴别器：mybatis可以使用discriminator判断某列的值，然后根据某列的值改变封装行为
+        封装Employee：
+            如果查出的是女生：就把部门信息查询出来，否则不查询；
+            如果是男生，把last_name这一列的值赋值给email;
+     -->
+
+</mapper>

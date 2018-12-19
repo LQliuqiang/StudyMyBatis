@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lq.day3.CarMapper">
+
+    <!--在UserInfoMapper.xml中的"分步骤查询"中使用-->
+    <select id="getCar" resultType="com.lq.day3.Car">
+        select * from car where id = #{id}
+    </select>
+
+    <!--多表联查-->
+    <resultMap id="myCarPulsMap" type="com.lq.day3.CarPuls">
+        <id column="cId" property="id"/>
+        <result column="cType" property="type"/>
+        <result column="cPrice" property="price"/>
+        <!--
+			collection定义关联集合类型的属性的封装规则
+			ofType:指定集合里面元素的类型
+		-->
+        <collection property="userInfos" ofType="com.lq.day3.UserInfo">
+            <!-- 定义这个集合中元素的封装规则 -->
+            <id column="uId" property="id"/>
+            <result column="uName" property="userName"/>
+            <result column="uPwd" property="password"/>
+            <result column="uInfo" property="info"/>
+        </collection>
+    </resultMap>
+    <select id="getCarPuls" resultMap="myCarPulsMap">
+        select
+        ui.id uId,ui.username uName,ui.password uPwd,ui.info uInfo ,ui.carId uiCarId,
+                car.id cId,car.type cType,car.price cPrice
+		FROM car
+		LEFT JOIN user_info ui
+		ON car.id=ui.carId
+		WHERE car.id=#{id}
+    </select>
+
+    <!--分步骤查询(collection也是可以用到分布查询)-->
+    <resultMap type="com.lq.day3.CarPuls" id="MyCarStep">
+        <id column="id" property="id"/>
+        <result column="type" property="type"/>
+        <result column="price" property="price"/>
+        <collection property="userInfos"
+                    select="com.lq.day3.UserInfoMapper.getUserInfosByCarId"
+                    column="id"/>
+    </resultMap>
+    <select id="getCarPulsByIdStep" resultMap="MyCarStep">
+		 select * from car where id = #{id}
+	</select>
+
+</mapper>
